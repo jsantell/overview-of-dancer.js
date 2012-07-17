@@ -1,7 +1,7 @@
 (function () {
 
     /* Waveform */
-    var dancerWave = new Dancer('songs/zircon_devils_spirit', [ 'ogg', 'mp3' ]);
+    var dancerWave = new Dancer('songs/tonetest', [ 'ogg', 'mp3' ]);
 
     dancerWave.waveform( document.getElementById('waveform'), {
         strokeStyle: '#666',
@@ -14,7 +14,18 @@
             dancerWave.stop() ;
     });
 
+    var dancerWave2 = new Dancer('songs/zircon_devils_spirit', [ 'ogg', 'mp3' ]);
 
+    dancerWave2.waveform( document.getElementById('waveform2'), {
+        strokeStyle: '#666',
+        strokeWidth: 2
+    });
+
+    document.getElementById('waveform2-btn').addEventListener( 'click', function () {
+        dancerWave2.isLoaded() && !dancerWave2.isPlaying() ?
+            dancerWave2.play() :
+            dancerWave2.stop() ;
+    });
 
     /* FFT */
     var dancerFFT = new Dancer('songs/zircon_devils_spirit', [ 'ogg', 'mp3' ]);
