@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Overview of Dancer.js</title>
+    <link rel='stylesheet' type='text/css' href='css/main.css' media='screen'/>
+    <link rel='stylesheet' type='text/css' href='css/prettify.css' media='screen'/>
+    <script type='text/javascript' src='js/jquery.js'></script>
+    <script type='text/javascript' src='js/jquery.presentr.min.js'></script>
+    <script type='text/javascript' src='js/prettify.js'></script>
+    <script type='text/javascript'>
+    $(function()    {
+        $('#slides').presentr({
+            speed: 500,
+            pageDisplay: $('#slideinfo'),
+            hashJump: true,
+            hashPrefix: 'slide'
+        });
+    });
+    </script>
+</head>
+<body>
+
+<div id='header'>
+	<h2 id='name'>Overview of Dancer.js</h2>
+	<h3 id='title'>i don't want to startle you, but your browser is dancing</h3>
+    <div id='author'>Jordan Santell</div>
+	<div id='links'><a href='http://www.twitter.com/jsantell' title='Jordan Santell on Twitter'>@jsantell</a> | <a href='http://www.github.com/jsantell/dancer.js' title='Jordan Santell on GitHub'>GitHub</a>
+    </div>
+</div>
+
+<div id='slideinfo'></div>
+
+<div id='slides'>
+
+<div class='slide'>
+	<h1>Overview of Dancer.js</h1>
+</div>
+
+
+<div class='slide'>
+	<h1>Features</h1>
+	<ul>
+		<li>Real-time audio data analysis</li>
+		<li>Extensible</li>
+		<li>Beat detection</li>
+		<li>API for timed events, callbacks</li>
+		<li>Leverages Web Audio API, Audio Data API, flash fallback</li>
+	</ul>
+</div>
+
+<div class='slide'>
+	<h1>State of Browser Audio</h1>
+	<ul>
+		<li><strong>Audio Data API</strong> - Firefox 4+</li>
+		<li><strong>Web Audio API</strong> - Chrome 10+, Safari 5.2+, iOS6+</li>
+		<li><strong>Flash</strong> - IE, Opera :(</li>
+	</ul>
+</div>
+<div class='slide'>
+	<h1>Audio Data API</h1>
+	<p>Extends HTMLMediaElement and HTMLAudioElement with event-based API</p>
+	<pre class="prettyprint lang-js">
+	var audio = new Audio();
+	audio.addEventListener('MozAudioAvailable', function ( e ) {
+		// e.frameBuffer
+	}, false);
+	audio.addEventListener('loadedmetadata', function ( e ) {
+		// audio.mozFrameBufferLength
+		// audio.mozChannels
+		// audio.mozSampleRate
+	}, false);
+	</pre>
+</div>
+
+<div class='slide'>
+	<h1>Web Audio API</h1>
+	<p>Process and synthesize audio via nodes in a routing graph</p>
+	<img src="img/webaudioapi.png" />
+</div>
+
+<div class='slide'>
+	<h1>Waveform Data</h1>
+	<pre class="prettyprint lang-js">
+	var dancer = new Dancer('audiofile.ogg'),
+	canvas = document.getElementById('wave'),
+	ctx = canvas.getContext('2d'),
+	w = canvas.width, h = canvas.height, waveform;
+
+	dancer.bind('update', function () {
+		waveform = this.getWaveform();
+		ctx.clearRect(0, 0, w, h);
+		ctx.beginPath();
+		ctx.moveTo(0, h/2);
+		for (var i = 0, l = waveform.length; i < l && i < 1024; i++) {
+			ctx.lineTo( i * w, (h/2) + waveform[ i ] * (h/2));
+		}
+		ctx.stroke();
+		ctx.closePath();
+	});
+	</pre>
+</div>
+
+<div class='slide'>
+	<h1>Waveform Data</h1>
+	<a href="#" id="waveform-btn" class="trigger">trigger</a>
+	<canvas id="waveform" width="900" height="400"></canvas>
+</div>
+
+<div class='slide'>
+	<h1>Frequency Spectrum Data</h1>
+	<pre class="prettyprint lang-js">
+	var dancer = new Dancer('audiofile.ogg'),
+	canvas = document.getElementById('fft'),
+	ctx = canvas.getContext('2d'),
+	w = canvas.width, h = canvas.height, spectrum;
+
+	dancer.bind('update', function () {
+		spectrum = this.getSpectrum();
+		ctx.clearRect(0, 0, w, h);
+		for (var i = 0, l = spectrum.length; i < l && i < 1024; i++) {
+			ctx.fillRect(i*w, h, w, -spectrum[i]*h);
+		}
+	});
+	</pre>
+</div>
+
+<div class='slide'>
+	<h1>Frequency Spectrum Data</h1>
+	<a href="#" id="fft-btn" class="trigger">trigger</a>
+	<canvas id="fft" width="900" height="400"></canvas>
+</div>
+
+<div class='slide'>
+	<h1>Extensible</h1>
+	<p>Waveform and FFT plugins</p>
+	<pre class="prettyprint lang-js">
+	var dancerWave = new Dancer('songs/zircon_devils_spirit', [ 'ogg', 'mp3' ]);
+	dancerWave.waveform(waveformCanvas, {
+		strokeStyle: '#666',
+		strokeWidth: 2
+	});
+		
+	var dancerFFT = new Dancer('songs/zircon_devils_spirit', [ 'ogg', 'mp3' ]);
+	dancerFFT.fft(fftCanvas, { fillStyle: '#666' });
+	</pre>
+</div>
+
+<div class='slide'>
+	<h1>Beats</h1>
+	<p>Configure beat detection with <strong>frequency</strong>, <strong>threshold</strong>, <strong>decay</strong>, and <strong>onBeat</strong> and <strong>offBeat</strong> callbacks
+	<pre class="prettyprint lang-js">
+	var dancerBeat = new Dancer('songs/zircon_devils_spirit', [ 'ogg', 'mp3' ]),
+	beat = dancerBeat.createBeat({
+		frequency : [ 0, 10 ],
+		threshold : 0.3,
+		decay     : 0.02,
+		onBeat    : function () { ctx.fillStyle = '#ff0077'; },
+		offBeat   : function () { ctx.fillStyle = '#666'; }
+	}).on();
+	
+	dancerBeat.fft(beatCanvas, { ctx.fillStyle = '#666'; });
+	</pre>
+</div>
+
+<div class='slide'>
+	<h1>Beats</h1>
+	<a href="#" id="beat-btn" class="trigger">trigger</a>
+	<canvas id="beat" width="900" height="400"></canvas>
+</div>
+
+<div class='slide'>
+	<h1>Timed Events</h1>
+	<pre class="prettyprint lang-js">
+	(new Dancer('song.ogg'))
+		.onceAt(0, function () { showScene = true; })
+		.before(20, function () { obj.y = this.getFrequency(10); })
+		.between(20, 30, function () { buildUp = true; })
+		.onceAt(30, explosion)
+		.after(30.2, intenseShit);
+	</pre>
+</div>
+
+<div class='slide'>
+	<h1>Future</h1>
+	<ul>
+		<li>Bind more tightly to audio element for external audio players</li>
+	</ul>
+</div>
+
+<div class='slide'>
+	<h1>Go forth and dance.</h1>
+
+    <p>Contact me (<a href='http://twitter.com/jsantell' title='Jordan Santell on Twitter'>Twitter</a>, <a href='http://github/jsantell' title='Jordan Santell on GitHub'>GitHub</a>) if you have any feedback!</p>
+</div>
+
+</div>
+
+<script src="dancer.js/dancer.min.js"></script>
+<script src="dancer.js/plugins/dancer.waveform.js"></script>
+<script src="dancer.js/plugins/dancer.fft.js"></script>
+<script src="js/dancerExamples.js"></script>
+<script>
+	$(function () { prettyPrint(); });
+</script>
+
+</body>
+</html>

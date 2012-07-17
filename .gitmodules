@@ -1,0 +1,3 @@
+[submodule "dancer.js"]
+	path = dancer.js
+	url = git@github.com:jsantell/dancer.js.git
